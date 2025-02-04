@@ -1,6 +1,7 @@
 # vagacerta - um app de estacionamento
 
 A new Flutter project.
+Para que o projeto funcione bem voce tem que fazer conecçao com o seu banco de dados e gerar as vagas
 
 ## Getting Started
 
