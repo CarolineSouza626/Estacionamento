@@ -1,0 +1,118 @@
+{
+  "project_info": {
+    "project_number": "304612385908",
+    "project_id": "estacionamento-1",
+    "storage_bucket": "estacionamento-1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:304612385908:android:9c777b0345174a0e8edd21",
+        "android_client_info": {
+          "package_name": "com.estacionamento"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "304612385908-9e5h7a7rl749n39ojpert6k6pc4263a1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3R5HHdtcDag8lapC6yaEiQCNHQ7BEsUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "304612385908-9e5h7a7rl749n39ojpert6k6pc4263a1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "304612385908-hbmfgohh0qilq60vl0j4vfemkbh9ipgf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.estacionamento"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:304612385908:android:1ce12f53121d33678edd21",
+        "android_client_info": {
+          "package_name": "com.example.estacionamento"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "304612385908-9e5h7a7rl749n39ojpert6k6pc4263a1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3R5HHdtcDag8lapC6yaEiQCNHQ7BEsUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "304612385908-9e5h7a7rl749n39ojpert6k6pc4263a1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "304612385908-hbmfgohh0qilq60vl0j4vfemkbh9ipgf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.estacionamento"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:304612385908:android:8182be14b050950b8edd21",
+        "android_client_info": {
+          "package_name": "com.example.vagacerta"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "304612385908-9e5h7a7rl749n39ojpert6k6pc4263a1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3R5HHdtcDag8lapC6yaEiQCNHQ7BEsUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "304612385908-9e5h7a7rl749n39ojpert6k6pc4263a1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "304612385908-hbmfgohh0qilq60vl0j4vfemkbh9ipgf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.estacionamento"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
