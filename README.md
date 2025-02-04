@@ -1,4 +1,4 @@
-# vagacerta
+# vagacerta - um app de estacionamento
 
 A new Flutter project.
 
