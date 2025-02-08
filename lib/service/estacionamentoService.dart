@@ -8,6 +8,13 @@ class EstacionamentoService {
     return _firestore.collection('vaga').snapshots();
   }
 
+   // Função para obter vagas filtradas por tipo de veículo (moto ou carro)
+  Stream<QuerySnapshot> getVagasPorTipo(String tipo) {
+    return _firestore.collection('vagas')
+      .where('tipo', isEqualTo: tipo)  // Filtra pelo tipo (moto ou carro)
+      .snapshots();
+  }
+
   // Função para liberar vaga e registrar no histórico
   Future<void> liberarVaga(String id) async {
     var vaga = await _firestore.collection("vaga").doc(id).get();

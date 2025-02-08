@@ -1,6 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:vagacerta/pages/cadastroPage.dart';
 import 'package:vagacerta/service/authService.dart';
-import 'package:flutter/material.dart';
 import 'estacionamentoPage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -17,24 +17,21 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
   void login() async {
-    String email = emailController.text;
-    String senha = senhaController.text;
+    String email = emailController.text.trim();
+    String senha = senhaController.text.trim();
 
     if (email.isEmpty || senha.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Por favor, preencha todos os campos.")),
+        const SnackBar(content: Text("Por favor, preencha todos os campos.")),
       );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     var user = await _authService.login(email, senha);
-    setState(() {
-      _isLoading = false;
-    });
+
+    setState(() => _isLoading = false);
 
     if (user != null) {
       // ignore: use_build_context_synchronously
@@ -44,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Falha no login! Verifique seus dados.")),
+        const SnackBar(content: Text("Falha no login! Verifique seus dados.")),
       );
     }
   }
@@ -52,50 +49,85 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.all(20),
+      body: Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.local_parking, size: 100, color: Colors.blue),
-              SizedBox(height: 20),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: "Email",
-                  border: OutlineInputBorder(),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ),
-              SizedBox(height: 10),
-              TextField(
-                controller: senhaController,
-                decoration: InputDecoration(
-                  labelText: "Senha",
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-              ),
-              SizedBox(height: 20),
-              _isLoading
-                  ? CircularProgressIndicator() // Indicador de carregamento
-                  : ElevatedButton(
-                      onPressed: login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        minimumSize: Size(double.infinity, 50),
+                elevation: 5,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.car_crash, size: 80, color: Colors.blue),
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Bem-vindo ao VagaCerta",
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
-                      child: Text("Entrar"),
-                    ),
-              TextButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CadastroPage()),
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                          labelText: "Email",
+                          prefixIcon: const Icon(Icons.email),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        controller: senhaController,
+                        decoration: InputDecoration(
+                          labelText: "Senha",
+                          prefixIcon: const Icon(Icons.lock),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        obscureText: true,
+                      ),
+                      const SizedBox(height: 20),
+                      _isLoading
+                          ? const CircularProgressIndicator()
+                          : SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: login,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text("Entrar", style: TextStyle(fontSize: 18)),
+                              ),
+                            ),
+                      TextButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => CadastroPage()),
+                        ),
+                        child: const Text("Criar conta"),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Text("Criar conta"),
               ),
-            ],
+            ),
           ),
         ),
       ),

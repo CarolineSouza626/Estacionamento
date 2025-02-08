@@ -4,6 +4,7 @@ import 'package:vagacerta/pages/historicoPage.dart';
 import 'package:vagacerta/pages/loginPage.dart';
 import 'package:vagacerta/service/estacionamentoService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 
 class EstacionamentoPage extends StatefulWidget {
   const EstacionamentoPage({super.key});
@@ -15,147 +16,156 @@ class EstacionamentoPage extends StatefulWidget {
 class _EstacionamentoPageState extends State<EstacionamentoPage> {
   final EstacionamentoService _service = EstacionamentoService();
   final TextEditingController placaController = TextEditingController();
+
+  User? get usuarioAtual => FirebaseAuth.instance.currentUser;
+
+  // Validação de placa
+  bool _isPlacaValida(String placa) {
+    final placaRegex = RegExp(r'^[A-Z]{3}[0-9][A-Z][0-9]{2}$'); // Padrão de placa
+    return placaRegex.hasMatch(placa);
+  }
+
+  // Função para obter a foto de perfil
+  Future<Widget> _getUserProfilePicture() async {
+    try {
+      if (usuarioAtual != null) {
+        // Foto de perfil no Firebase Auth
+        final photoUrl = usuarioAtual?.photoURL;
+        if (photoUrl != null) {
+          return Image.network(photoUrl, width: 50, height: 50);
+        }
+      }
+    } catch (e) {
+      print("Erro ao carregar a foto do perfil: $e");
+    }
+    return const CircleAvatar(child: Icon(Icons.person, size: 40)); // Foto padrão
+  }
+
   // Função para liberar vaga
   void liberarVaga(String id) async {
-    // Busca os dados da vaga pelo ID
     var vaga = await _service.getVagaPorId(id);
-
     if (vaga != null && vaga['hora_entrada'] != null) {
       DateTime horaEntrada = (vaga['hora_entrada'] as Timestamp).toDate();
       DateTime horaSaida = DateTime.now();
       double valor = _service.calcularPagamento(horaEntrada, horaSaida);
 
-      // Exibir um AlertDialog com o valor a ser pago
       showDialog(
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Valor a Pagar'),
-            content:
-                Text('O valor a ser pago é: R\$ ${valor.toStringAsFixed(2)}'),
-            actions: [
-              TextButton(
-                onPressed: () async {
-                  // Liberar a vaga após confirmar
-                  await _service.liberarVaga(id);
-
-                  // Fechar o diálogo
-                  Navigator.of(context).pop();
-                },
-                child: Text('Liberar'),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Fechar o diálogo sem liberar a vaga
-                  Navigator.of(context).pop();
-                },
-                child: Text('Cancelar'),
-              ),
-            ],
-          );
-        },
+        builder: (context) => AlertDialog(
+          title: const Text('Valor a Pagar'),
+          content: Text('O valor a ser pago é: R\$ ${valor.toStringAsFixed(2)}'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await _service.liberarVaga(id);
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+              child: const Text('Liberar', style: TextStyle(color: Colors.green)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+          ],
+        ),
       );
-    } else {
-      print("Erro: A vaga não tem hora de entrada registrada.");
     }
   }
 
+  // Função para cadastrar ou editar veículo
+  void cadastrarVeiculo(String id, {String? placaAtual}) async {
+    placaController.text = placaAtual ?? "";
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(placaAtual != null ? 'Editar Placa' : 'Cadastrar Veículo'),
+        content: TextField(
+          controller: placaController,
+          decoration: const InputDecoration(hintText: 'Digite a placa do veículo'),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              String placa = placaController.text;
+              if (placa.isNotEmpty && _isPlacaValida(placa)) {
+                await _service.cadastrarVeiculoNaVaga(id, placa);
+                placaController.clear(); // Limpar campo após cadastro
+                Navigator.of(context).pop();
+                setState(() {});
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Placa inválida. Tente novamente.")),
+                );
+              }
+            },
+            child: Text(placaAtual != null ? 'Editar' : 'Cadastrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Função de logout
   void logout() async {
     await FirebaseAuth.instance.signOut();
-    // Após o logout, redireciona para a tela de login
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => LoginPage()),
     );
   }
 
-  // Função para cadastrar veículo na vaga
-  void cadastrarVeiculo(String id) async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Cadastrar Veículo'),
-          content: TextField(
-            controller: placaController,
-            decoration: InputDecoration(hintText: 'Digite a placa do veículo'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Cadastrar'),
-              onPressed: () async {
-                String placa = placaController.text;
-                if (placa.isNotEmpty) {
-                  // Aqui você registra o veículo na vaga e marca como ocupada
-                  await _service.cadastrarVeiculoNaVaga(id, placa);
-                  Navigator.of(context).pop();
-                  setState(() {});
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text("Por favor, insira uma placa válida.")),
-                  );
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // EstacionamentoPage content dentro da EstacionamentoPage
-  Widget EstacionamentoPageContent() {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue, // Cor do AppBar
-        elevation: 4, // Sombra do AppBar
-        title: Center(
-          // Usando o Center para centralizar o título
-          child: Text(
-            "Gerenciamento de Estacionamento",
-            style: TextStyle(
-              fontSize: 20, // Tamanho do texto
-              fontWeight: FontWeight.bold, // Peso do texto
-              color: Colors.white, // Cor do texto
-            ),
+        title: const Text("Gerenciamento de Estacionamento"),
+        backgroundColor: Colors.blueAccent,
+        elevation: 5,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            onPressed: logout,
           ),
-        ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            DrawerHeader(
-              child: Text(
-                'Menu',
-                style: TextStyle(fontSize: 24, color: Colors.white),
+            UserAccountsDrawerHeader(
+              accountName: Text(usuarioAtual?.displayName ?? "Usuário"),
+              accountEmail: Text(usuarioAtual?.email ?? "Sem e-mail"),
+              currentAccountPicture: FutureBuilder<Widget>(
+                future: _getUserProfilePicture(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircleAvatar(child: CircularProgressIndicator());
+                  }
+                  return snapshot.data ?? const CircleAvatar(child: Icon(Icons.person));
+                },
               ),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
+              decoration: const BoxDecoration(color: Colors.blueAccent),
             ),
             ListTile(
-              leading: Icon(Icons.history),
-              title: Text('Histórico'),
+              leading: const Icon(Icons.history),
+              title: const Text('Histórico'),
               onTap: () {
-                // Redireciona para a página de histórico
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => HistoricoPage()),
                 );
               },
             ),
+        
             ListTile(
-              leading: Icon(Icons.exit_to_app),
-              title: Text('Logout'),
-              onTap: logout, // Chama o método logout
+              leading: const Icon(Icons.exit_to_app),
+              title: const Text('Logout'),
+              onTap: logout,
             ),
           ],
         ),
@@ -163,44 +173,51 @@ class _EstacionamentoPageState extends State<EstacionamentoPage> {
       body: StreamBuilder<QuerySnapshot>(
         stream: _service.getVagas(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
+          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
           var vagas = snapshot.data!.docs;
           return ListView.builder(
             itemCount: vagas.length,
             itemBuilder: (context, index) {
               var vaga = vagas[index];
+              var ocupada = vaga['ocupada'] ?? false;
+              var placa = vaga['placa'];
               var horaEntrada = vaga['hora_entrada'] != null
                   ? (vaga['hora_entrada'] as Timestamp).toDate()
                   : null;
+
               return Card(
-                elevation: 3,
-                margin: EdgeInsets.all(10),
-                color: vaga['ocupada']
-                    ? Colors.red.shade50
-                    : Colors
-                        .green.shade50, // Cor diferente para ocupada/disponível
+                elevation: 6,
+                margin: const EdgeInsets.all(10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                color: ocupada ? Colors.red.shade100 : Colors.green.shade100,
                 child: ListTile(
-                  title: Text("Placa: ${vaga['placa'] ?? 'Vaga Livre'}"),
+                  leading: ocupada
+                      ? const Icon(Icons.directions_car, color: Colors.red)
+                      : const Icon(Icons.local_parking, color: Colors.green),
+                  title: Text(placa ?? 'Vaga Livre', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   subtitle: horaEntrada != null
-                      ? Text("Entrada: ${horaEntrada.toString()}")
-                      : Text("Disponível"),
-                  trailing: vaga['ocupada']
-                      ? ElevatedButton(
-                          onPressed: () => liberarVaga(vaga.id),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          child: Text("Liberar"),
+                      ? Text("Entrada: ${DateFormat('dd/MM/yyyy HH:mm').format(horaEntrada)}")
+                      : const Text("Disponível"),
+                  trailing: ocupada
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.orange),
+                              onPressed: () => cadastrarVeiculo(vaga.id, placaAtual: placa),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => liberarVaga(vaga.id),
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                              child: const Text("Liberar"),
+                            ),
+                          ],
                         )
                       : ElevatedButton(
                           onPressed: () => cadastrarVeiculo(vaga.id),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                          ),
-                          child: Text("Cadastrar Veículo"),
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                          child: const Text("Cadastrar"),
                         ),
                 ),
               );
@@ -209,10 +226,5 @@ class _EstacionamentoPageState extends State<EstacionamentoPage> {
         },
       ),
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return EstacionamentoPageContent(); // Exibe o conteúdo diretamente
   }
 }
